@@ -32,9 +32,9 @@ namespace DualJwt
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            //services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-            services.AddAuthentication()
-                    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            // https://github.com/aspnetboilerplate/aspnetboilerplate/issues/2836
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
                     {
                         options.Authority = "http://localhost:59043";
                         options.RequireHttpsMetadata = false;
@@ -51,23 +51,14 @@ namespace DualJwt
                             ValidateLifetime = true,
                             ClockSkew = TimeSpan.Zero
                         };
-                    })
-                    .AddIdentityServerAuthentication("IdentityBearer", options =>
-                    {
-                        options.Authority = "http://localhost:5000";
-                        options.RequireHttpsMetadata = false;
-                        //options.ApiName = "api1";
-                        //options.ApiSecret = "secret";
                     });
-
-
-            services.AddAuthorization(options =>
-                    {
-                        options.DefaultPolicy = new AuthorizationPolicyBuilder()
-                            .RequireAuthenticatedUser()
-                            .AddAuthenticationSchemes("IdentityBearer", JwtBearerDefaults.AuthenticationScheme)
-                            .Build();
-                    });
+                    //.AddIdentityServerAuthentication("IdentityBearer", options =>
+                    //{
+                    //    options.Authority = "http://localhost:5000";
+                    //    options.RequireHttpsMetadata = false;
+                    //    //options.ApiName = "api1";
+                    //    //options.ApiSecret = "secret";
+                    //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,29 +69,29 @@ namespace DualJwt
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
 
-            app.Use(async (ctx, next) =>
-            {
-                if (ctx.User.Identity?.IsAuthenticated != true)
-                {
-                    var result = await ctx.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                    if (result.Succeeded && result.Principal != null)
-                    {
-                        ctx.User = result.Principal;
-                    }
-                    else
-                    {
-                        var result2 = await ctx.AuthenticateAsync("Bearer");
-                        if (result2.Succeeded && result2.Principal != null)
-                        {
-                            ctx.User = result2.Principal;
-                        }
-                    }
-                }
+            //app.Use(async (ctx, next) =>
+            //{
+            //    if (ctx.User.Identity?.IsAuthenticated != true)
+            //    {
+            //        var result = await ctx.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            //        if (result.Succeeded && result.Principal != null)
+            //        {
+            //            ctx.User = result.Principal;
+            //        }
+            //        else
+            //        {
+            //            var result2 = await ctx.AuthenticateAsync("IdentityBearer");
+            //            if (result2.Succeeded && result2.Principal != null)
+            //            {
+            //                ctx.User = result2.Principal;
+            //            }
+            //        }
+            //    }
 
-                await next();
-            });
+            //    await next();
+            //});
 
             app.UseMvc();
         }
