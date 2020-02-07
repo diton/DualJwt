@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DualJwt.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,8 @@ namespace DualJwt.Controllers
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            return "value";
+            var principal = Thread.CurrentPrincipal as PanelUserPrincipal;
+            return ((PanelUserIdentity)principal.Identity).UserId;
         }
 
         // POST api/values
