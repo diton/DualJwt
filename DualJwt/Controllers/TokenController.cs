@@ -1,4 +1,5 @@
-﻿using IdentityModel.Client;
+﻿using DualJwt.Security;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -39,6 +40,11 @@ namespace DualJwt.Controllers
         [HttpGet("jwt")]
         public async Task<IActionResult> GetJwt()
         {
+            var apiKeyService = new ApiKeyService();
+            var service = apiKeyService.GetRandom();
+
+            return Ok(service.ApiKey);
+
             var claims = new List<Claim>();
 
             claims.Add(new Claim("UserId", "123"));

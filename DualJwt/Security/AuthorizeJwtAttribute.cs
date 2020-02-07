@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 
 namespace DualJwt.Security
@@ -35,6 +36,20 @@ namespace DualJwt.Security
 
         private void SetCurrentPrincipal(AuthorizationFilterContext context)
         {
+            if (context.HttpContext.User.Identity.IsAuthenticated && context.HttpContext.User.Identity.AuthenticationType == "JWT")
+            {
+
+                var identity = (ClaimsIdentity)context.HttpContext.User.Identity;
+                var panelIdentity = new PanelUserIdentity()
+                {
+                    IsAuthenticated = identity.IsAuthenticated,
+                    UserId = identity.Claims.FirstOrDefault(x => x.Type == "UserId").Value
+                };
+
+                Thread.CurrentPrincipal = new PanelUserPrincipal(panelIdentity);
+                return;
+            }
+
             var principal = new PanelUserPrincipal(
                 new PanelUserIdentity()
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DualJwt.Security;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,34 +32,17 @@ namespace DualJwt
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddTransient<IApiKeyService, ApiKeyService>();
 
             // https://github.com/aspnetboilerplate/aspnetboilerplate/issues/2836
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options =>
+                    .AddIdentityServerAuthentication(options =>
                     {
-                        options.Authority = "http://localhost:59043";
+                        options.Authority = "http://localhost:5000";
                         options.RequireHttpsMetadata = false;
-                        options.SaveToken = true;
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-                            ValidIssuer = "http://localhost:59043",
-                            ValidateAudience = true,
-                            ValidAudience = "http://localhost:59043",
-                            ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("tosekret123dasdasd213das")),
-                            RequireExpirationTime = false,
-                            ValidateLifetime = true,
-                            ClockSkew = TimeSpan.Zero
-                        };
+                        options.ApiName = "api1";
+                        options.ApiSecret = "secret";
                     });
-                    //.AddIdentityServerAuthentication("IdentityBearer", options =>
-                    //{
-                    //    options.Authority = "http://localhost:5000";
-                    //    options.RequireHttpsMetadata = false;
-                    //    //options.ApiName = "api1";
-                    //    //options.ApiSecret = "secret";
-                    //});
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,6 +54,7 @@ namespace DualJwt
             }
 
             app.UseAuthentication();
+            app.UseApiKeyAuthentication();
 
             //app.Use(async (ctx, next) =>
             //{
